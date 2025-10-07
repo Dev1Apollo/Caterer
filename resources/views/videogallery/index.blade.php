@@ -1,0 +1,226 @@
+@extends('layouts.app')
+@section('title', 'Video Gallery List')
+@section('content')
+
+    <div class="main-content">
+        <div class="page-content">
+            <div class="container-fluid">
+
+                {{-- Alert Messages --}}
+                @include('common.alert')
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <div class="col-lg-4">
+
+                                        <div class="d-flex justify-content-between card-header">
+                                            <h5 class="card-title mb-0">Add Video Gallery </h5>
+                                        </div>
+
+                                        <div class="live-preview">
+                                            <form action="{{ route('videogallery.store') }}" method="post"
+                                                onsubmit="return validateFile()" enctype="multipart/form-data">
+                                                @csrf
+                                                <div class="modal-body">
+
+                                                    <div class="mt-4">
+                                                        <div>
+                                                            <span style="color:red;">*</span>Enter Url
+                                                            <input type="url" class="form-control" name="strUrl"
+                                                                id="strUrl" value="{{ old('strUrl') }}"
+                                                                placeholder="Enter Url" pattern="https://.*"
+                                                                autocomplete="off" required autofocus>
+                                                        </div>
+                                                        @error('strUrl')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <div class="hstack mt-2 gap-2 justify-content-end">
+                                                        <button type="submit"
+                                                            class="btn btn-success btn-user float-right mx-2">
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-1">
+                                    </div>
+
+                                    <div class="col-lg-5">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title mb-0">Video Gallery List</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <?php //echo date('ymd');
+                                                ?>
+                                                <table id="scroll-horizontal" class="table nowrap align-middle"
+                                                    style="width:100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">sr.no</th>
+                                                            <th scope="col">Video</th>
+                                                            <th scope="col">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php $i = 1; ?>
+                                                        @foreach ($VideoGallery as $videogallery)
+                                                            <?php
+                                                            $ytarray = explode('/', $videogallery['strUrl']);
+                                                            $ytendstring = end($ytarray);
+                                                            $ytendarray = explode('?v=', $ytendstring);
+                                                            $ytendstring = end($ytendarray);
+                                                            $ytendarray = explode('&', $ytendstring);
+                                                            $ytcode = $ytendarray[0];
+                                                            ?>
+                                                            <tr class="text-center">
+                                                                <td>{{ $i + $VideoGallery->perPage() * ($VideoGallery->currentPage() - 1) }}
+                                                                <td>
+                                                                    <iframe width="100%" height="315"
+                                                                        src="https://www.youtube.com/embed/<?= $ytcode ?>"
+                                                                        title="YouTube video player" frameborder="0"
+                                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                        allowfullscreen style="height: 160px;">
+                                                                    </iframe>
+
+                                                                </td>
+                                                                <td>
+                                                                    <div class="gap-2">
+
+                                                                        <a class="" href="#"
+                                                                            data-bs-toggle="modal" title="Delete"
+                                                                            data-bs-target="#deleteRecordModal"
+                                                                            onclick="deleteData(<?= $videogallery->videoGalleryId ?>);">
+                                                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                                                        </a>
+
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <?php $i++; ?>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                                <div class="d-flex justify-content-center mt-3">
+                                                    {{ $VideoGallery->links() }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+        </div>
+
+
+        <!--Delete Modal Start -->
+        <div class="modal fade zoomIn" id="deleteRecordModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                            id="btn-close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mt-2 text-center">
+                            <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop"
+                                colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px">
+                            </lord-icon>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                                <h4>Are you Sure ?</h4>
+                                <p class="text-muted mx-4 mb-0">Are you Sure You want to Remove this Record
+                                    ?</p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                            <a class="btn btn-danger" href="{{ route('logout') }}"
+                                onclick="event.preventDefault(); document.getElementById('user-delete-form').submit();">
+                                Yes,
+                                Delete It!
+                            </a>
+                            <button type="button" class="btn w-sm btn-light" data-bs-dismiss="modal">Close</button>
+                            <form id="user-delete-form" method="POST" action="{{ route('videogallery.delete') }}">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="videoGalleryId" id="deleteid" value="">
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Delete modal End -->
+    @endsection
+
+    @section('scripts')
+
+
+        {{-- Add photo --}}
+        <script>
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#hello').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            $("#photovalidate").change(function() {
+                html =
+                    '<img src="' + readURL(this) +
+                    '"   id="hello" width="70px" height = "70px" > ';
+                $('#viewimg').html(html);
+            });
+        </script>
+
+        <script>
+            function deleteData(id) {
+                $("#deleteid").val(id);
+            }
+        </script>
+
+        <script>
+            function validateFile() {
+                var allowedExtension = ['jpeg', 'jpg', 'png', 'webp'];
+                var fileExtension = document.getElementById('photovalidate').value.split('.').pop().toLowerCase();
+                var isValidFile = false;
+
+                for (var index in allowedExtension) {
+
+                    if (fileExtension === allowedExtension[index]) {
+                        isValidFile = true;
+                        break;
+                    }
+                }
+
+                if (!isValidFile) {
+                    alert('Allowed Extensions are : *.' + allowedExtension.join(', *.'));
+                }
+
+                return isValidFile;
+            }
+        </script>
+
+
+    @endsection
